@@ -1,0 +1,125 @@
+<view class="main_flex">
+  <scroll-view class="map_container">
+    <map id="myMap" style="width: 100%;z-index:0;height:{{height}}px" class="map" bindcontroltap="controltap" bindmarkertap="markertap" latitude="{{latitude}}" polyline="{{polyline}}" longitude="{{longitude}}" show-location="{{showLocation}}" markers="{{markers}}"
+      controls="{{controls}}" bindregionchange="regionchange"></map>
+  </scroll-view>
+  <scroll-view wx:if="{{op == 0}}" scroll-y="true" class="post_form">
+    <button class="finish" size="mini" bindtap="finish">呼叫</button>
+    <button class="next" size="mini" bindtap="next">然后</button>
+    <view>
+      <text class="post_form_title">您好，您现在想做什么？</text>
+      <text class="post_form_desc">附近有{{runners.length}}个跑腿员</text>
+    </view>
+    <view class="form_row">
+      <view class="line"></view>
+      <image class="icon" src="/runner_open/image/bmap/time.png"></image>
+      <picker mode="date" value="{{whatDate}}" start="{{startDate}}" end="2019-09-01" bindchange="listenerDatePickerSelected">
+        <view class="picker">
+          <input value="{{whatDate}}" disabled="true" placeholder="今天"/>
+        </view>
+      </picker>
+      <image class="icon" src="/runner_open/image/bmap/time.png"></image>
+      <picker mode="time" value="{{whatTime}}" start="{{startTime}}" end="23:59" bindchange="listenerTimePickerSelected">
+        <view class="picker">
+          <input class="light" value="{{whatTime}}" disabled="true" placeholder="越快越好" />
+        </view>
+      </picker>
+      
+    </view>
+    <view class="form_row">
+      <view class="line"></view>
+      <image class="icon" src="/runner_open/image/bmap/time.png"></image>
+      <picker bindchange="bindTaskTypePickerChange" value="{{index}}" range="{{taskTypes}}">
+        <view class="picker">
+          <input class="light" value="{{taskTypeSelect}}" disabled="true" placeholder="订单类型" />
+        </view>
+      </picker>
+    </view>
+    <view class="form_row">
+      <view class="line"></view>
+      <image class="icon" src="/runner_open/image/bmap/zai.png"></image>
+      <input disabled="true" bindtap="chooseStartLocation" placeholder="在/去哪里" value="{{whatPosition.address}}" />
+    </view>
+    <view class="form_row">
+      <view class="line"></view>
+      <image class="icon" src="/runner_open/image/bmap/post.png"></image>
+      <textarea value="{{whatThing}}" bindinput="confirmThing" bindconfirm="confirmThing" auto-height placeholder="详细地址/联系谁/做/取/买/拿什么"></textarea>
+    </view>
+  </scroll-view>
+
+  <scroll-view wx:if="{{op == 1}}" scroll-y="true" class="post_form">
+    <view>
+      <text class="post_form_title">路程：{{order.distance/1000}}公里，跑腿费约{{order.freight_money}}元</text>
+      <text class="post_form_desc">附近有{{runners.length}}个跑腿员</text>
+    </view>
+    <view class="form_row">
+      <view class="line"></view>
+      <image class="icon" src="/runner_open/image/bmap/redpack.png"></image>
+      <input type="digit" class="light" bindinput="confirmAddfee" bindconfirm="confirmAddfee" placeholder="追加赏金/元" value="{{addfee}}" />
+    </view>
+    <view class="form_btns" style="margin-top: 10px;">
+      <button type="primary" size="mini" bindtap="addOrder">立即提交</button>
+      <button size="mini" bindtap="cancelOrder">取消</button>
+    </view>
+  </scroll-view>
+
+  <!-- // 订单处理 -->
+  <scroll-view wx:if="{{op == 3}}" scroll-y="true" class="post_form">
+    <view wx:if="{{detail.status == 0}}">
+      <view>
+        <text class="post_form_title">正在通知附近跑腿员前往接单</text>
+        <text class="post_form_desc">附近有{{runners.length}}个跑腿员</text>
+      </view>
+      <view>
+        <text class="post_form_desc">接单倒计时{{timer}}s</text>
+      </view>
+      <view class="form_btns" style="padding: 0 10px;margin-top: 15px;">
+        <button style="margin: 0 3px;" type="primary" size="mini" bindtap="refreshDetail" class="refreshDetail">刷新</button>
+        <button style="margin: 0 3px;" bindtap="TaskDelete" size="mini" class="refreshDetail">不等了</button>
+      </view>
+    </view>
+    <view wx:if="{{detail.status == 1 || detail.status == 2}}">
+      <view>
+        <text class="post_form_title">任务进行中,总路程{{detail.distance/1000}}公里！</text>
+        <text class="post_form_desc">附近有{{runners.length}}个跑腿员</text>
+      </view>
+      <view class="post_form_desc" style="padding: 0 10px;margin-top: 15px;">
+        预计10分钟后完成任务
+      </view>
+      <view class="post_form_desc" style="padding: 0 10px;margin-top: 15px;">
+        <button style="margin: 0 3px;" type="primary" size="mini" bindtap="cuicuiTask" class="refreshDetail">催单</button>
+      </view>
+    </view>
+
+    <view wx:if="{{detail.status == 3}}">
+      <view>
+        <text class="post_form_title">任务进行中,总路程{{detail.distance/1000}}公里！</text>
+        <text class="post_form_desc">附近有{{runners.length}}个跑腿员</text>
+      </view>
+      <view class="post_form_desc" style="padding: 0 10px;margin-top: 15px;">
+        共计30元
+      </view>
+      <view class="post_form_desc" style="padding: 0 10px;margin-top: 15px;">
+        <button style="margin: 0 3px;" type="primary" size="mini" bindtap="payTask" class="refreshDetail">去支付</button>
+      </view>
+    </view>
+
+    <view wx:if="{{detail.status == 4}}">
+      <view>
+        <text class="post_form_title">任务已完成，请做出诚恳的评价！</text>
+        <text class="post_form_desc">诚恳的评价有助于我们服务的提升</text>
+      </view>
+      <view class="form_row">
+        <image class="icon" src="/runner_open/image/bmap/gift.png"></image>
+        <input type="digit" bindinput="confirmAddfee" bindconfirm="confirmConfirm" placeholder="请对此服务评分(满分100分)" value="{{addfee}}" />
+      </view>
+      <view class="form_row">
+        <image class="icon" src="/runner_open/image/bmap/post.png"></image>
+        <input type="digit" bindinput="confirmAddfee" bindconfirm="confirmConfirm" placeholder="请对此次服务做出评价" value="{{addfee}}" />
+      </view>
+      <view class="post_form_desc" style="padding: 0 10px;margin-top: 15px;">
+        <button style="margin: 0 3px;" type="primary" size="mini" bindtap="payTask" class="refreshDetail">提交保存</button>
+      </view>
+    </view>
+  </scroll-view>
+</view>
