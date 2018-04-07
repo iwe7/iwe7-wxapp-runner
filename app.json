@@ -1,7 +1,6 @@
 {
   "pages": [
-    "runner_open/page/bmap/bmap",
-    "runner_open/page/detail/detail"
+    "runner_open/page/bmap/bmap"
   ],
   "window": {
     "navigationBarTextStyle": "black",
